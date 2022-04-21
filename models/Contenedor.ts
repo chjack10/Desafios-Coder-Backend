@@ -8,7 +8,7 @@ export default class Contenedor {
     this.filePath = filePath;
   }
 
-  private writeFile = async (data: Product[]): Promise<void> => {
+  private readonly writeFile = async (data: Array<Product>): Promise<void> => {
     try {
       await fs.promises.writeFile(this.filePath, JSON.stringify(data));
     } catch (err: any) {
@@ -16,32 +16,34 @@ export default class Contenedor {
     }
   };
 
-  private readFile = async (): Promise<StoredProduct[]> => {
+  private readonly readFile = async (): Promise<StoredProduct[]> => {
     try {
       return (await fs.promises.readFile(this.filePath, 'utf8'))
         ? JSON.parse(await fs.promises.readFile(this.filePath, 'utf8'))
-        : [];
+        : ([] as StoredProduct[]);
     } catch (err: any) {
       // if said file does not exist, create it
       if (err.errno === -2) {
         try {
-          await fs.promises.writeFile(this.filePath, '[]');
-          return [];
+          await fs.promises.writeFile(this.filePath, JSON.stringify([]));
+          return [] as StoredProduct[];
         } catch (err: any) {
           console.error('Could not create file in such directory. ', err);
         }
       } else {
         console.log('Method readFile: ', err);
       }
-      return [];
+      return [] as StoredProduct[];
     }
   };
 
   public async save(product: Product): Promise<number | void> {
     try {
       const fileData: StoredProduct[] = await this.readFile();
-      const id =
-        fileData.length === 0 ? 1 : fileData[fileData.length - 1].id + 1;
+      const id: number =
+        fileData.length === 0
+          ? 1
+          : Math.max(...fileData.map((object: StoredProduct) => object.id)) + 1;
 
       fileData.push({ ...product, id });
       await this.writeFile(fileData);
@@ -56,7 +58,7 @@ export default class Contenedor {
     try {
       const fileData: StoredProduct[] = await this.readFile();
 
-      return fileData.find((object: StoredProduct) => object.id === id) || null;
+      return fileData.find((object: StoredProduct) => object.id === id) ?? null;
     } catch (err: any) {
       console.log('Method getById: ', err);
     }
@@ -69,14 +71,12 @@ export default class Contenedor {
 
   public async deleteById(id: number): Promise<void> {
     try {
-      const fileData = JSON.parse(
-        await fs.promises.readFile(this.filePath, 'utf8')
-      );
-
-      const newFileData = fileData.filter(
+      const fileData: StoredProduct[] = await this.readFile();
+      const newFileData: StoredProduct[] = fileData.filter(
         (object: StoredProduct) => object.id !== id
       );
-      await fs.promises.writeFile(this.filePath, JSON.stringify(newFileData));
+
+      await this.writeFile(newFileData);
     } catch (err: any) {
       console.log('Method deleteById: ', err);
     }
