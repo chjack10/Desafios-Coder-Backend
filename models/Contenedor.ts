@@ -1,7 +1,7 @@
 import fs from 'fs';
-import { Product, StoredProduct } from '../interfaces';
+import { Error, Product, StoredProduct } from '../interfaces';
 
-export default class Contenedor {
+class Contenedor {
   filePath: string;
 
   constructor(filePath: string) {
@@ -54,15 +54,19 @@ export default class Contenedor {
     }
   }
 
-  public async getById(id: number): Promise<StoredProduct | null> {
+  public async getById(id: number): Promise<StoredProduct | Error> {
     try {
       const fileData: StoredProduct[] = await this.readFile();
 
-      return fileData.find((object: StoredProduct) => object.id === id) ?? null;
+      return (
+        fileData.find((object: StoredProduct) => object.id === id) ?? {
+          error: 'producto no encontrado',
+        }
+      );
     } catch (err: any) {
       console.log('Method getById: ', err);
     }
-    return null;
+    return { error: 'fetch item method failed' };
   }
 
   public async getAll(): Promise<StoredProduct[]> {
@@ -89,4 +93,20 @@ export default class Contenedor {
       console.log('Method deleteAll: ', err);
     }
   }
+
+  public async update(id: number, product: Product): Promise<void> {
+    try {
+      const fileData: StoredProduct[] = await this.readFile();
+      const newFileData: StoredProduct[] = fileData.map(
+        (object: StoredProduct) =>
+          object.id === id ? { ...object, ...product } : object
+      );
+
+      await this.writeFile(newFileData);
+    } catch (err: any) {
+      console.log('Method update: ', err);
+    }
+  }
 }
+
+export default new Contenedor('./data/productos.txt');

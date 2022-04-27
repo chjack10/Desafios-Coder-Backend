@@ -1,56 +1,43 @@
 import { Request, Response } from 'express';
-import Contenedor from '../models/Contenedor';
 import { StoredProduct } from '../interfaces';
-
-const container: Contenedor = new Contenedor('./data/productos.txt');
+import Container from '../models/Contenedor';
 
 export const getProducts = async (_req: Request, res: Response) => {
-  const body: StoredProduct[] = await container.getAll();
+  const body: StoredProduct[] = await Container.getAll();
 
   res.json(body);
 };
 
-export const getRandomProduct = async (_req: Request, res: Response) => {
-  const products: StoredProduct[] = await container.getAll();
-  const randomProduct: StoredProduct =
-    products[Math.floor(Math.random() * products.length)];
-
-  res.json(randomProduct);
-};
-
-export const getProduct = (req: Request, res: Response) => {
+export const getProduct = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const body = await Container.getById(Number(id));
 
-  res.json({
-    msg: 'getProduct',
-    id,
-  });
+  res.json(body);
 };
 
-export const postProduct = (req: Request, res: Response) => {
-  const { body } = req;
+export const postProduct = async (req: Request, res: Response) => {
+  const { body: product } = req;
+  const id = await Container.save(product);
 
-  res.json({
-    msg: 'postProduct',
-    body,
-  });
+  res.json({ ...product, id });
 };
 
 export const putProduct = (req: Request, res: Response) => {
-  // const { id } = req.params;
+  const { id } = req.params;
   const { body } = req;
 
+  Container.update(Number(id), body);
+
   res.json({
-    msg: 'putProduct',
-    body,
+    msg: `producto ${id} actualizado`,
   });
 };
 
 export const deleteProduct = (req: Request, res: Response) => {
   const { id } = req.params;
+  Container.deleteById(Number(id));
 
   res.json({
-    msg: 'deleteProduct',
-    id,
+    msg: `producto ${id} eliminado`,
   });
 };

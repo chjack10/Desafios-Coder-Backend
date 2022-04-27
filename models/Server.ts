@@ -1,24 +1,29 @@
 import express, { Application } from 'express';
 import productRoutes from '../routes/product';
-import randomProductRoute from '../routes/randomProduct';
+import cors from 'cors';
 
 class Server {
   private app: Application;
   private port: string;
-  private paths = {
-    products: '/productos',
-    randomProduct: '/productoRandom',
+  private apiPaths = {
+    products: '/api/productos',
   };
 
   constructor() {
     this.app = express();
-    this.port = process.env.PORT ?? '8000';
+    this.port = process.env.PORT ?? '8080';
+    this.middlewares();
     this.routes();
   }
 
+  middlewares() {
+    this.app.use(cors());
+    this.app.use(express.json());
+    this.app.use(express.static('public'));
+  }
+
   routes() {
-    this.app.use(this.paths.products, productRoutes);
-    this.app.use(this.paths.randomProduct, randomProductRoute);
+    this.app.use(this.apiPaths.products, productRoutes);
   }
 
   listen() {
@@ -28,4 +33,4 @@ class Server {
   }
 }
 
-export default Server;
+export default new Server();
