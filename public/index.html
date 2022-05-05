@@ -13,11 +13,11 @@
     <hr />
     <br/>    
         <div class="container">
-            <form>
-                <input class="form-control my-2" type="text" name="title" placeholder="nombre del producto">
-                <input class="form-control my-2" type="number" name="price" placeholder="precio" min="1">
-                <input class="form-control my-2" type="text" name="thumbnail" placeholder="url al logo o foto del producto">
-                <button class="btn btn-primary" type="submit">Agregar </button>
+            <form method="post" action="/api/productos">
+                <input class="form-control my-2" type="text" name="title" placeholder="nombre del producto" minlength="4" maxlength="100" required>
+                <input class="form-control my-2" type="number" name="price" placeholder="precio" min="1" required>
+                <input class="form-control my-2" type="text" name="thumbnail" placeholder="url al logo o foto del producto" minlength="4" maxlength=""100" required>
+                <button class="btn btn-primary">Agregar</button>
             </form>
         </div>    
     </div>

@@ -1,32 +1,31 @@
 import { Request, Response } from 'express';
-import { StoredProduct } from '../interfaces';
-import Container from '../models/Contenedor';
+import Products from '../models/Products';
 
-export const getProducts = async (_req: Request, res: Response) => {
-  const body: StoredProduct[] = await Container.getAll();
+export const getProducts = (_req: Request, res: Response) => {
+  const body = Products.getAll();
 
   res.json(body);
 };
 
-export const getProduct = async (req: Request, res: Response) => {
+export const getProduct = (req: Request, res: Response) => {
   const { id } = req.params;
-  const body = await Container.getById(Number(id));
+  const body = Products.getById(Number(id));
 
   res.json(body);
 };
 
-export const postProduct = async (req: Request, res: Response) => {
-  const { body: product } = req;
-  const id = await Container.save(product);
+export const postProduct = (req: Request, res: Response) => {
+  const product = req.body;
+  const storedProduct = Products.add(product);
 
-  res.json({ ...product, id });
+  res.json(storedProduct);
 };
 
 export const putProduct = (req: Request, res: Response) => {
   const { id } = req.params;
   const { body } = req;
 
-  Container.update(Number(id), body);
+  Products.update(Number(id), body);
 
   res.json({
     msg: `producto ${id} actualizado`,
@@ -35,9 +34,52 @@ export const putProduct = (req: Request, res: Response) => {
 
 export const deleteProduct = (req: Request, res: Response) => {
   const { id } = req.params;
-  Container.deleteById(Number(id));
+  Products.deleteById(Number(id));
 
   res.json({
     msg: `producto ${id} eliminado`,
   });
 };
+
+// import { Request, Response } from 'express';
+// import { StoredProduct } from '../interfaces';
+// import Products from '../models/Contenedor';
+
+// export const getProducts =  (_req: Request, res: Response) => {
+//   const body: StoredProduct[] =  Products.getAll();
+
+//   res.json(body);
+// };
+
+// export const getProduct =  (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const body =  Products.getById(Number(id));
+
+//   res.json(body);
+// };
+
+// export const postProduct =  (req: Request, res: Response) => {
+//   const product = req.body;
+//   const id =  Products.save(product);
+
+//   res.json({ ...product, id });
+// };
+
+// export const putProduct = (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const { body } = req;
+//   Products.update(Number(id), body);
+
+//   res.json({
+//     msg: `producto ${id} actualizado`,
+//   });
+// };
+
+// export const deleteProduct = (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   Products.deleteById(Number(id));
+
+//   res.json({
+//     msg: `producto ${id} eliminado`,
+//   });
+// };
