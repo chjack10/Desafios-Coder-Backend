@@ -6,7 +6,7 @@ class Server {
   private app: Application;
   private port: string;
   private apiPaths = {
-    products: '/api/productos',
+    products: '/',
   };
 
   constructor() {
@@ -14,6 +14,7 @@ class Server {
     this.port = process.env.PORT ?? '8080';
     this.middlewares();
     this.routes();
+    this.views();
   }
 
   middlewares() {
@@ -24,11 +25,17 @@ class Server {
         extended: true,
       })
     );
-    this.app.use(express.static('public'));
+    // this.app.use(express.static('public'));
   }
 
   routes() {
     this.app.use(this.apiPaths.products, productRoutes);
+  }
+
+  views() {
+    // this.app.set('view engine', 'hbs');
+    // this.app.set('view engine', 'pug');
+    this.app.set('view engine', 'ejs');
   }
 
   listen() {
