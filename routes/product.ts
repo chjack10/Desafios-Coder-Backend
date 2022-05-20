@@ -5,13 +5,11 @@ import {
   postProduct,
   putProduct,
   getProducts,
-  getNewProductForm,
 } from '../controllers/products';
 
 const router: Router = Router();
 
-router.get('/productos', getProducts);
-router.get('/', getNewProductForm);
+router.get('/', getProducts);
 router.get('/:id', getProduct);
 router.post('/productos', postProduct);
 router.put('/:id', putProduct);

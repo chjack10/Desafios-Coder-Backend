@@ -1,13 +1,17 @@
 import { Request, Response } from 'express';
 import Products from '../models/Products';
 
-export const getProducts = (_req: Request, res: Response) => {
-  const products = Products.getAll();
-  res.render('products', {
-    products,
-  });
+// export const getProducts = (_req: Request, res: Response) => {
+//   // const products = Products.getAll();
+//   // res.render('products', {
+//   //   products,
+//   // });
+//   // res.json(body);
+// }; 
 
-  // res.json(body);
+export const getProducts = (req: Request, res: Response) => {
+  const products = Products.getAll();
+  res.render('home', { products });
 };
 
 export const getProduct = (req: Request, res: Response) => {
@@ -15,10 +19,6 @@ export const getProduct = (req: Request, res: Response) => {
   const body = Products.getById(Number(id));
 
   res.json(body);
-};
-
-export const getNewProductForm = (req: Request, res: Response) => {
-  res.render('home');
 };
 
 export const postProduct = (req: Request, res: Response) => {
