@@ -1,11 +1,14 @@
 import fs from 'fs';
-import { Cart as CartType, StoredProduct } from '../interfaces';
+import { Cart as CartType } from '../interfaces';
+import { StoredProduct } from '../interfaces/StoredProduct';
 
 class Cart {
   private static filePath: string;
+  private readonly productFilePath: string;
 
   constructor(filePath: string) {
     Cart.filePath = filePath;
+    this.productFilePath = './data/productos.txt';
   }
 
   private readonly writeFile = async (data: CartType[]): Promise<void> => {
@@ -16,7 +19,7 @@ class Cart {
     }
   };
 
-  private readonly readFile = async (): Promise<CartType[]> => {
+  private readonly readCartFile = async (): Promise<CartType[]> => {
     try {
       return (await fs.promises.readFile(Cart.filePath, 'utf8'))
         ? JSON.parse(await fs.promises.readFile(Cart.filePath, 'utf8'))
@@ -39,10 +42,32 @@ class Cart {
       return [] as CartType[];
     }
   };
+
+  private readonly readProductsFile = async (): Promise<StoredProduct[]> => {
+    try {
+      return (await fs.promises.readFile(this.productFilePath, 'utf8'))
+        ? JSON.parse(await fs.promises.readFile(this.productFilePath, 'utf8'))
+        : ([] as StoredProduct[]);
+    } catch (err: any) {
+      // if said file does not exist, create it
+      if (err.errno === -2) {
+        try {
+          await fs.promises.writeFile(this.productFilePath, JSON.stringify([]));
+          return [] as StoredProduct[];
+        } catch (err: any) {
+          console.error('Could not create file in such directory. ', err);
+        }
+      } else {
+        console.log('Method readFile: ', err);
+      }
+      return [] as StoredProduct[];
+    }
+  };
+
   //a. post
   public createNew = async (): Promise<number | Error> => {
     try {
-      const cart = await this.readFile();
+      const cart = await this.readCartFile();
       const timestamp = Date.now();
 
       if (cart.length === 0 || typeof cart === 'undefined') {
@@ -63,7 +88,7 @@ class Cart {
   //b. delete
   public deleteById = async (id: number): Promise<void | Error> => {
     try {
-      const cart = await this.readFile();
+      const cart = await this.readCartFile();
       const newCart = cart.filter((item) => item.id !== id);
 
       await this.writeFile(newCart);
@@ -77,7 +102,7 @@ class Cart {
     id: number
   ): Promise<StoredProduct[] | Error> => {
     try {
-      const cart = await this.readFile();
+      const cart = await this.readCartFile();
       const foundCart = cart.find((object) => object.id === id);
 
       if (typeof foundCart !== 'undefined') return foundCart.products;
@@ -90,18 +115,27 @@ class Cart {
   };
   //d. post
   public addProductsById = async (
-    id: number,
-    products: StoredProduct[]
+    cartId: number,
+    productsId: number[]
   ): Promise<void | Error> => {
     try {
-      const cart = await this.readFile();
-      const foundCart = cart.find((object) => object.id === id);
+      const carts = await this.readCartFile();
+      const foundCart = carts.find((object) => object.id === cartId);
 
-      if (typeof foundCart !== 'undefined') {
-        const newProducts = [...foundCart.products, ...products];
-        const newCart = cart.map((item) =>
-          item.id === id ? { ...item, products: newProducts } : item
+      const products = await this.readProductsFile();
+      const productsToAdd = products.filter((product) =>
+        productsId.includes(product.id)
+      );
+
+      if (
+        typeof foundCart !== 'undefined' &&
+        typeof productsToAdd !== 'undefined'
+      ) {
+        const newProducts = [...foundCart.products, ...productsToAdd];
+        const newCart = carts.map((object) =>
+          object.id === cartId ? { ...object, products: newProducts } : object
         );
+
         await this.writeFile(newCart);
       }
     } catch (err: any) {
@@ -111,20 +145,21 @@ class Cart {
   };
   //e. delete
   public deleteItemById = async (
-    id: number,
+    cartId: number,
     productId: number
   ): Promise<void | Error> => {
     try {
-      const cart = await this.readFile();
-      const foundCart = cart.find((object) => object.id === id);
+      const cart = await this.readCartFile();
+      const foundCart = cart.find((object) => object.id === cartId);
 
       if (typeof foundCart !== 'undefined') {
         const newProducts = foundCart.products.filter(
-          (item) => item.id !== productId
+          (product) => product.id !== productId
         );
-        const newCart = cart.map((item) =>
-          item.id === id ? { ...item, products: newProducts } : item
+        const newCart = cart.map((object) =>
+          object.id === cartId ? { ...object, products: newProducts } : object
         );
+
         await this.writeFile(newCart);
       }
     } catch (err: any) {
