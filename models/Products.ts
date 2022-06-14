@@ -1,43 +1,25 @@
 import { Error, Product, StoredProduct } from '../interfaces';
-import { mariaDBOptions } from '../DB/configDB';
-import { Knex } from 'knex';
 
 class Products {
   productList: StoredProduct[];
-  private db: Knex;
-  private table: string;
 
-  constructor(options: any, table: string) {
+  constructor() {
     this.productList = [];
-    this.db = require('knex')(options);
-    this.table = table;
-    this.createTableIfNotExists();
   }
 
-  private async createTableIfNotExists(): Promise<void> {
-    if (!(await this.db.schema.hasTable(this.table))) {
-      try {
-        await this.db.schema.createTableIfNotExists(this.table, (table) => {
-          table.increments('id').primary();
-          table.string('name');
-          table.string('code');
-          table.string('description');
-          table.integer('price');
-          table.string('photoURL');
-          table.string('image');
-          table.integer('stock');
-          table.integer('timestamp');
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  }
+  public add = (product: Product): StoredProduct => {
+    const id: number =
+      this.productList.length === 0
+        ? 1
+        : Math.max(
+            ...this.productList.map((product: StoredProduct) => product.id)
+          ) + 1;
 
-  public add = async (product: Product): Promise<void> => {
     const timestamp = Date.now();
 
-    await this.db.insert({ ...product, timestamp }).into(this.table);
+    this.productList.push({ id, ...product, timestamp });
+
+    return this.productList[this.productList.length - 1];
   };
 
   public getById = (id: number): StoredProduct | Error => {
@@ -47,12 +29,8 @@ class Products {
     else return { error: 'producto no encontrado' };
   };
 
-  public async getAll(): Promise<StoredProduct[]> {
-    const products: StoredProduct[] = await this.db
-      .select('*')
-      .from(this.table);
-
-    return products;
+  public getAll(): StoredProduct[] {
+    return this.productList;
   }
 
   public deleteById(id: number): void {
@@ -66,4 +44,4 @@ class Products {
   }
 }
 
-export default new Products(mariaDBOptions, 'products');
+export default new Products();
