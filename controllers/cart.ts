@@ -1,5 +1,10 @@
 import { Request, Response } from 'express';
-import Cart from '../models/Cart';
+
+import selectDbContainerCart from '../utils/selectDbContainerCart';
+
+const Cart: any = selectDbContainerCart()
+  .then((Container) => Container)
+  .catch(console.log);
 
 export const createCart = async (_req: Request, res: Response) => {
   const cartId = await Cart.createNew();

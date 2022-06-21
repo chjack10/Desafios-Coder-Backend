@@ -3,7 +3,7 @@ import cors from 'cors';
 import productRoutes from '../routes/product';
 import cartRoutes from '../routes/cart';
 import defaultRoutes from '../routes/default';
-import auth from '../middlewares/auth';
+// import auth from '../middlewares/auth';
 
 class Server {
   private app: Application;
@@ -29,7 +29,7 @@ class Server {
         extended: true,
       })
     );
-    this.app.use(auth);
+    // this.app.use(auth);
   }
 
   routes() {

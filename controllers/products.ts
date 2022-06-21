@@ -1,40 +1,45 @@
 import { Request, Response } from 'express';
-import Products from '../models/Contenedor';
+// import Container from '../models/containers/product.fileContainer';
+import selectDbContainerProducts from '../utils/selectDbContainerProducts';
 
-export const getProducts = async(_req: Request, res: Response) => {
-  const products = await Products.getAll();
+const Container: any = selectDbContainerProducts()
+  .then((Container) => Container)
+  .catch(console.log);
+
+export const getProducts = async (_req: Request, res: Response) => {
+  const products = await Container.getAll();
 
   res.json(products);
 };
 
-export const getProduct = async(req: Request, res: Response) => {
+export const getProduct = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const body = await Products.getById(Number(id));
+  const body = await Container.getById(Number(id));
 
   res.json(body);
 };
 
-export const postProduct = async(req: Request, res: Response) => {
+export const postProduct = async (req: Request, res: Response) => {
   const product = req.body;
 
-  const storedProduct =  await Products.save(product);
+  const storedProduct = await Container.save(product);
   res.json(storedProduct);
 };
 
-export const putProduct = async(req: Request, res: Response) => {
+export const putProduct = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { body } = req;
 
-  await Products.update(Number(id), body);
+  await Container.update(Number(id), body);
 
   res.json({
     msg: `producto ${id} actualizado`,
   });
 };
 
-export const deleteProduct = async(req: Request, res: Response) => {
+export const deleteProduct = async (req: Request, res: Response) => {
   const { id } = req.params;
-  await Products.deleteById(Number(id));
+  await Container.deleteById(Number(id));
 
   res.json({
     msg: `producto ${id} eliminado`,
