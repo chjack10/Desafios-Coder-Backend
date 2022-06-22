@@ -1,12 +1,9 @@
 import { Request, Response } from 'express';
-
 import selectDbContainerCart from '../utils/selectDbContainerCart';
 
-const Cart: any = selectDbContainerCart()
-  .then((Container) => Container)
-  .catch(console.log);
-
 export const createCart = async (_req: Request, res: Response) => {
+  const { default: Cart }: any = await selectDbContainerCart();
+
   const cartId = await Cart.createNew();
 
   if (typeof cartId !== 'number') {
@@ -19,6 +16,8 @@ export const createCart = async (_req: Request, res: Response) => {
 };
 
 export const addToCartById = async (req: Request, res: Response) => {
+  const { default: Cart }: any = await selectDbContainerCart();
+
   const { id } = req.params;
   const products = req.body;
 
@@ -35,6 +34,8 @@ export const addToCartById = async (req: Request, res: Response) => {
 };
 
 export const emptyCartById = async (req: Request, res: Response) => {
+  const { default: Cart }: any = await selectDbContainerCart();
+
   const { id } = req.params;
 
   const cart = await Cart.deleteById(Number(id));
@@ -50,6 +51,8 @@ export const emptyCartById = async (req: Request, res: Response) => {
 };
 
 export const deleteProductByCartId = async (req: Request, res: Response) => {
+  const { default: Cart }: any = await selectDbContainerCart();
+
   const { id, id_prod } = req.params;
 
   const cart = await Cart.deleteItemById(Number(id), Number(id_prod));
@@ -65,9 +68,10 @@ export const deleteProductByCartId = async (req: Request, res: Response) => {
 };
 
 export const getProductsByCartId = async (req: Request, res: Response) => {
+  const { default: Cart }: any = await selectDbContainerCart();
   const { id } = req.params;
 
-  const cart = await Cart.getItemsById(Number(id));
+  const cart = await Cart.getById(Number(id));
   if (cart instanceof Error) {
     return res.status(500).json({
       error: -1,

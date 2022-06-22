@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { Error } from '../../interfaces';
+import { Cart as CartType } from '../../interfaces';
 
 class FileContainer {
   filePath: string;
@@ -16,24 +16,27 @@ class FileContainer {
     }
   };
 
-  private readonly readFile = async (): Promise<any> => {
+  private readonly readFile = async (): Promise<CartType[]> => {
     try {
       return (await fs.promises.readFile(this.filePath, 'utf8'))
         ? JSON.parse(await fs.promises.readFile(this.filePath, 'utf8'))
-        : ([] as any[]);
+        : ([] as CartType[]);
     } catch (err: any) {
       // if said file does not exist, create it
       if (err.errno === -2) {
         try {
           await fs.promises.writeFile(this.filePath, JSON.stringify([]));
-          return [];
+          return [] as CartType[];
         } catch (err: any) {
-          console.error('Could not create file in such directory. ', err);
+          console.error(
+            'Method: readFile: could not create file in such directory.',
+            err
+          );
         }
       } else {
         console.log('Method readFile: ', err);
       }
-      return [];
+      return [] as CartType[];
     }
   };
 
@@ -108,6 +111,78 @@ class FileContainer {
       console.log('Method update: ', err);
     }
   }
+
+  public createNew = async (): Promise<number | Error> => {
+    try {
+      const cart = await this.readFile();
+      const timestamp = Date.now();
+
+      if (cart.length === 0 || typeof cart === 'undefined') {
+        await this.writeFile([{ id: 1, timestamp, products: [] }]);
+        return 1;
+      }
+      const id = Math.max(...cart.map((object: any) => object.id)) + 1;
+      await this.writeFile([...cart, { id, timestamp, products: [] }]);
+      return id;
+    } catch (err: any) {
+      console.error(err);
+      return err;
+    }
+  };
+
+  public addProductsById = async (
+    cartId: number,
+    productsId: number[]
+  ): Promise<void | Error> => {
+    try {
+      const carts = await this.readFile();
+      const foundCart = carts.find((object: any) => object.id === cartId);
+
+      const products = await this.readFile();
+      const productsToAdd = products.filter((product: any) =>
+        productsId.includes(product.id)
+      );
+
+      if (
+        typeof foundCart !== 'undefined' &&
+        typeof productsToAdd !== 'undefined'
+      ) {
+        const newProducts = [...foundCart.products, ...productsToAdd];
+        const newCart = carts.map((object: any) =>
+          object.id === cartId ? { ...object, products: newProducts } : object
+        );
+
+        await this.writeFile(newCart);
+      }
+    } catch (err: any) {
+      console.error(err);
+      return err;
+    }
+  };
+
+  public deleteItemById = async (
+    cartId: number,
+    productId: number
+  ): Promise<void | Error> => {
+    try {
+      const cart = await this.readFile();
+      const foundCart = cart.find((object: any) => object.id === cartId);
+
+      if (typeof foundCart !== 'undefined') {
+        const newProducts = foundCart.products.filter(
+          (product: any) => product.id !== productId
+        );
+        const newCart = cart.map((object: any) =>
+          object.id === cartId ? { ...object, products: newProducts } : object
+        );
+
+        await this.writeFile(newCart);
+      }
+    } catch (err: any) {
+      console.error(err);
+      return err;
+    }
+  };
 }
 
 export default FileContainer;

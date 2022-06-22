@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import config from '../../db/config';
-import { Product, StoredProduct } from '../../interfaces';
 
 class MongoContainer {
   model: mongoose.Model<unknown, {}, {}, {}>;
@@ -19,7 +18,7 @@ class MongoContainer {
     }
   }
 
-  async save(product: Product): Promise<any | void> {
+  async save(product: any): Promise<any | void> {
     try {
       const productToSave = new this.model(product);
       const _id = await productToSave.save();
@@ -42,7 +41,7 @@ class MongoContainer {
     }
   }
 
-  public async getAll(): Promise<StoredProduct[] | any> {
+  public async getAll(): Promise<any[] | any> {
     const foundItems = await this.model.find({});
 
     return foundItems;
@@ -71,7 +70,7 @@ class MongoContainer {
     return { msg: 'todos los productos eliminados' };
   }
 
-  public async update(id: number, newData: Product): Promise<any> {
+  public async update(id: number, newData: any): Promise<any> {
     try {
       const objId = new mongoose.mongo.ObjectId(id);
       const updatedData = await this.model.updateOne({ _id: objId }, newData);
