@@ -8,9 +8,12 @@ class CartDAOFirebase extends FirebaseContainer {
 
   async createNew() {
     try {
-      const cart = await admin.firestore().collection(this.collection).add({});
+      await admin
+        .firestore()
+        .collection(this.collection)
+        .add({ timestamp: Date.now(), productos: [] });
 
-      return cart.id;
+      return { msg: 'cart created' };
     } catch (err) {
       console.log(err);
     }

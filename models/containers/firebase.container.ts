@@ -1,7 +1,7 @@
+import firebaseAccountCredentials from '../../db/serviceAccountKey.json';
 import admin from 'firebase-admin';
-import { addToCartById } from '../../controllers/cart';
 
-const serviceAccount = require('../../db/serviceAccountKey.json');
+const serviceAccount = firebaseAccountCredentials as admin.ServiceAccount;
 
 class FirebaseContainer {
   collection: string;
@@ -13,16 +13,17 @@ class FirebaseContainer {
 
   connect() {
     try {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
+      if (admin.apps.length === 0) {
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+        });
 
-      console.log('connected to firebase');
+        console.log('connected to firebase');
+      }
     } catch (err) {
       console.log(err);
     }
   }
-
 
   async save(product: any): Promise<any> {
     try {
