@@ -1,17 +1,23 @@
 import express, { Application } from 'express';
 import cors from 'cors';
-import productRoutes from '../routes/product';
-import cartRoutes from '../routes/cart';
-import defaultRoutes from '../routes/default';
-// import auth from '../middlewares/auth';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
+import passport from 'passport';
+import mongoose from 'mongoose';
+
+import homeRoutes from '../routes/home.route';
+import loginRoutes from '../routes/login.route';
+import signUpRoutes from '../routes/signup.route';
+import logoutRoutes from '../routes/logout.route';
 
 class Server {
   private app: Application;
   private port: string;
   private apiPaths = {
-    products: '/api/productos',
-    cart: '/api/carrito',
-    default: '*',
+    home: '/',
+    login: '/login',
+    signup: '/signup',
+    logout: '/logout',
   };
 
   constructor() {
@@ -19,6 +25,9 @@ class Server {
     this.port = process.env.PORT ?? '8080';
     this.middlewares();
     this.routes();
+    this.views();
+    this.passport();
+    this.dbConnection();
   }
 
   middlewares() {
@@ -29,14 +38,43 @@ class Server {
         extended: true,
       })
     );
-    // this.app.use(auth);
+    this.app.use(
+      session({
+        secret: 'secret',
+        resave: true,
+        saveUninitialized: true,
+        store: MongoStore.create({
+          mongoUrl: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@ecommerce.65qp3.mongodb.net/?retryWrites=true&w=majority`,
+          ttl: 60 * 10,
+        }),
+      })
+    );
   }
 
   routes() {
-    this.app.use(this.apiPaths.products, productRoutes);
-    this.app.use(this.apiPaths.cart, cartRoutes);
+    this.app.use(this.apiPaths.home, homeRoutes);
+    this.app.use(this.apiPaths.login, loginRoutes);
+    this.app.use(this.apiPaths.signup, signUpRoutes);
+    this.app.use(this.apiPaths.logout, logoutRoutes);
+  }
 
-    this.app.use(this.apiPaths.default, defaultRoutes);
+  views() {
+    this.app.set('views', 'views');
+    this.app.set('view engine', 'ejs');
+  }
+
+  dbConnection() {
+    mongoose
+      .connect(
+        `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@ecommerce.65qp3.mongodb.net/?retryWrites=true&w=majority`
+      )
+      .then(() => console.log('MongoDB connection established'))
+      .catch((err) => console.log(err));
+  }
+
+  passport() {
+    this.app.use(passport.initialize());
+    this.app.use(passport.session());
   }
 
   listen() {
