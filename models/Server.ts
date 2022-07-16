@@ -9,6 +9,8 @@ import homeRoutes from '../routes/home.route';
 import loginRoutes from '../routes/login.route';
 import signUpRoutes from '../routes/signup.route';
 import logoutRoutes from '../routes/logout.route';
+import failedSignupRoutes from '../routes/failedSignup.route';
+import failedLoginRoutes from '../routes/failedSignup.route';
 
 class Server {
   private app: Application;
@@ -18,6 +20,8 @@ class Server {
     login: '/login',
     signup: '/signup',
     logout: '/logout',
+    failedLogin: '/failedLogin',
+    failedSignup: '/failedSignup',
   };
 
   constructor() {
@@ -56,6 +60,8 @@ class Server {
     this.app.use(this.apiPaths.login, loginRoutes);
     this.app.use(this.apiPaths.signup, signUpRoutes);
     this.app.use(this.apiPaths.logout, logoutRoutes);
+    this.app.use(this.apiPaths.failedLogin, failedLoginRoutes);
+    this.app.use(this.apiPaths.failedSignup, failedSignupRoutes);
   }
 
   views() {

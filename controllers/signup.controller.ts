@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { generateToken } from '../jwt/jwt';
 import User from '../models/schema/user';
 
-export const renderSignUpView = (req: Request, res: Response) => {
+export const renderSignUpView = (_req: Request, res: Response) => {
   return res.render('signup');
 };
 
@@ -10,9 +10,7 @@ export const signUp = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
   const user = await User.findOne({ email: email });
   if (user) {
-    return res.status(409).json({
-      message: 'User already exists',
-    });
+    return res.render('failedSignup');
   }
 
   const newUser: any = new User({});

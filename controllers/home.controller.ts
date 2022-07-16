@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
 
-export const renderHomeView = (req: Request, res: Response) => {
+export const renderHomeView = (_req: Request, res: Response) => {
   return res.render('home');
 };
