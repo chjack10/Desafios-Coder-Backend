@@ -4,13 +4,16 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import passport from 'passport';
 import mongoose from 'mongoose';
+import yargs from 'yargs';
 
 import homeRoutes from '../routes/home.route';
 import loginRoutes from '../routes/login.route';
 import signUpRoutes from '../routes/signup.route';
 import logoutRoutes from '../routes/logout.route';
 import failedSignupRoutes from '../routes/failedSignup.route';
+import infoRoutes from '../routes/info.route';
 import failedLoginRoutes from '../routes/failedSignup.route';
+import randomsRoutes from '../routes/randoms.route';
 
 class Server {
   private app: Application;
@@ -22,11 +25,13 @@ class Server {
     logout: '/logout',
     failedLogin: '/failedLogin',
     failedSignup: '/failedSignup',
+    info: '/info',
+    randoms: '/api/randoms',
   };
 
   constructor() {
     this.app = express();
-    this.port = process.env.PORT ?? '8080';
+    this.port = yargs.argv.PORT ?? '8080';
     this.middlewares();
     this.routes();
     this.views();
@@ -62,6 +67,8 @@ class Server {
     this.app.use(this.apiPaths.logout, logoutRoutes);
     this.app.use(this.apiPaths.failedLogin, failedLoginRoutes);
     this.app.use(this.apiPaths.failedSignup, failedSignupRoutes);
+    this.app.use(this.apiPaths.randoms, randomsRoutes);
+    this.app.use(this.apiPaths.info, infoRoutes);
   }
 
   views() {
@@ -84,6 +91,8 @@ class Server {
   }
 
   listen() {
+    const args = yargs.argv;
+
     this.app.listen(this.port, () => {
       console.log('Server running on port', this.port);
     });
